@@ -1,0 +1,36 @@
+{
+  "breadcrumb": "IELTS Prep",
+  "title": "IELTS Preparation",
+  "subtitle": "Интенсивная подготовка к международному экзамену IELTS",
+  "description": "Наш курс IELTS Prep разработан специально для тех, кто хочет получить высокий балл на экзамене. Преподаватели знают все требования экзаменаторов и помогут вам освоить каждую из четырёх частей: Listening, Reading, Writing и Speaking.",
+  "structure": {
+    "title": "Структура подготовки",
+    "items": [
+      { "section": "Listening", "description": "Тренировка восприятия речи на слух, типы заданий Academic и General Training" },
+      { "section": "Reading", "description": "Работа с академическими текстами, стратегии поиска информации" },
+      { "section": "Writing", "description": "Task 1: описание графиков и диаграмм. Task 2: эссе с аргументацией" },
+      { "section": "Speaking", "description": "Трёхчастное интервью, работа с произношением и беглостью речи" }
+    ]
+  },
+  "results": {
+    "title": "Результаты наших студентов",
+    "avg_score": "7.0+",
+    "avg_score_label": "средний балл выпускников",
+    "pass_rate": "92%",
+    "pass_rate_label": "студентов достигают целевого балла",
+    "study_abroad": "200+",
+    "study_abroad_label": "поступили в зарубежные университеты"
+  },
+  "schedule": {
+    "title": "Расписание и стоимость",
+    "duration": "Продолжительность урока",
+    "duration_value": "120 минут",
+    "frequency": "Занятий в неделю",
+    "frequency_value": "3 раза",
+    "group_size": "Размер группы",
+    "group_size_value": "до 6 человек",
+    "price": "Стоимость",
+    "price_value": "от 5 500 сом/мес"
+  },
+  "cta": "Записаться на IELTS Prep"
+}

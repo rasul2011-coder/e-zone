@@ -1,0 +1,487 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Prisma Schema — English Zone Language Center
+// Database: PostgreSQL (Neon serverless)
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(50)
+  description String?
+
+  admins Admin[]
+
+  @@map("roles")
+}
+
+model Admin {
+  id           BigInt    @id @default(autoincrement())
+  name         String    @db.VarChar(100)
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  roleId       Int       @map("role_id")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  role                Role                 @relation(fields: [roleId], references: [id])
+  applicationHistory  ApplicationHistory[]
+  media               Media[]
+
+  @@map("admins")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRANCHES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Branch {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(150)
+  slug         String   @unique @db.VarChar(150)
+  address      String   @db.VarChar(255)
+  phone        String   @db.VarChar(30)
+  email        String?  @db.VarChar(255)
+  workingHours String   @map("working_hours") @db.VarChar(255)
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
+  description  String
+  image        String?  @db.VarChar(500)
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  courseSchedule  CourseSchedule[]
+  teacherBranches TeacherBranch[]
+  applications    Application[]
+  trialLessons    TrialLesson[]
+  reviews         Review[]
+  gallery         Gallery[]
+  events          Event[]
+
+  @@map("branches")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COURSES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CourseCategory {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  slug        String  @unique @db.VarChar(100)
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  coursesMap CourseCategoryMap[]
+
+  @@map("course_categories")
+}
+
+model Course {
+  id               Int      @id @default(autoincrement())
+  name             String   @db.VarChar(150)
+  slug             String   @unique @db.VarChar(150)
+  shortDescription String   @map("short_description")
+  description      String
+  image            String?  @db.VarChar(500)
+  price            Decimal? @db.Decimal(10, 2)
+  currency         String   @default("KGS") @db.VarChar(10)
+  duration         String?  @db.VarChar(100)
+  ageFrom          Int?     @map("age_from") @db.SmallInt
+  ageTo            Int?     @map("age_to") @db.SmallInt
+  isActive         Boolean  @default(true) @map("is_active")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+  sortOrder        Int      @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  categoriesMap   CourseCategoryMap[]
+  levels          CourseLevel[]
+  schedule        CourseSchedule[]
+  translations    CourseTranslation[]
+  teacherCourses  TeacherCourse[]
+  applications    Application[]
+  trialLessons    TrialLesson[]
+  reviews         Review[]
+
+  @@map("courses")
+}
+
+/// Pivot: Course ↔ CourseCategory (M:N)
+model CourseCategoryMap {
+  courseId   Int @map("course_id")
+  categoryId Int @map("category_id")
+
+  course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  category CourseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, categoryId])
+  @@map("course_categories_map")
+}
+
+model CourseLevel {
+  id          Int     @id @default(autoincrement())
+  courseId    Int     @map("course_id")
+  name        String  @db.VarChar(50)
+  description String?
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  schedule CourseSchedule[]
+
+  @@map("course_levels")
+}
+
+/// Schedule slot for a course at a specific branch/level/teacher
+model CourseSchedule {
+  id        BigInt    @id @default(autoincrement())
+  courseId  Int       @map("course_id")
+  branchId  Int       @map("branch_id")
+  levelId   Int?      @map("level_id")
+  teacherId Int?      @map("teacher_id")
+  /// Day of week: 1=Monday … 7=Sunday
+  dayOfWeek Int       @map("day_of_week") @db.SmallInt
+  startTime DateTime  @map("start_time") @db.Time
+  endTime   DateTime  @map("end_time") @db.Time
+  startDate DateTime? @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+  /// "offline" | "online" | "hybrid"
+  format    String    @default("offline") @db.VarChar(30)
+  isActive  Boolean   @default(true) @map("is_active")
+
+  course  Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  branch  Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  level   CourseLevel? @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  teacher Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@map("course_schedule")
+}
+
+model CourseTranslation {
+  id               BigInt  @id @default(autoincrement())
+  courseId         Int     @map("course_id")
+  languageId       Int     @map("language_id")
+  name             String  @db.VarChar(150)
+  shortDescription String? @map("short_description")
+  description      String?
+
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, languageId])
+  @@map("course_translations")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEACHERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Teacher {
+  id              Int     @id @default(autoincrement())
+  name            String  @db.VarChar(150)
+  slug            String  @unique @db.VarChar(150)
+  photo           String? @db.VarChar(500)
+  position        String? @db.VarChar(150)
+  specialization  String? @db.VarChar(255)
+  experienceYears Int?    @map("experience_years") @db.SmallInt
+  qualification   String?
+  languages       String? @db.VarChar(255)
+  bio             String?
+  isActive        Boolean @default(true) @map("is_active")
+  sortOrder       Int     @default(0) @map("sort_order")
+
+  teacherCourses  TeacherCourse[]
+  teacherBranches TeacherBranch[]
+  trialLessons    TrialLesson[]
+  courseSchedule  CourseSchedule[]
+
+  @@map("teachers")
+}
+
+/// Pivot: Teacher ↔ Course (M:N)
+model TeacherCourse {
+  teacherId Int @map("teacher_id")
+  courseId  Int @map("course_id")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, courseId])
+  @@map("teacher_courses")
+}
+
+/// Pivot: Teacher ↔ Branch (M:N)
+model TeacherBranch {
+  teacherId Int @map("teacher_id")
+  branchId  Int @map("branch_id")
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, branchId])
+  @@map("teacher_branches")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// APPLICATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ApplicationStatus {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(50)
+  description String? @db.VarChar(255)
+
+  applications       Application[]
+  historyOldStatus   ApplicationHistory[] @relation("OldStatus")
+  historyNewStatus   ApplicationHistory[] @relation("NewStatus")
+
+  @@map("application_statuses")
+}
+
+model Application {
+  id              BigInt    @id @default(autoincrement())
+  name            String    @db.VarChar(150)
+  phone           String    @db.VarChar(30)
+  email           String?   @db.VarChar(255)
+  courseId        Int?      @map("course_id")
+  branchId        Int?      @map("branch_id")
+  preferredTime   String?   @map("preferred_time") @db.VarChar(100)
+  comment         String?
+  source          String?   @db.VarChar(100)
+  statusId        Int       @map("status_id")
+  privacyAccepted Boolean   @default(false) @map("privacy_accepted")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  course       Course?            @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  branch       Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  status       ApplicationStatus  @relation(fields: [statusId], references: [id])
+  history      ApplicationHistory[]
+  trialLessons TrialLesson[]
+
+  @@map("applications")
+}
+
+model ApplicationHistory {
+  id            BigInt   @id @default(autoincrement())
+  applicationId BigInt   @map("application_id")
+  adminId       BigInt   @map("admin_id")
+  oldStatusId   Int?     @map("old_status_id")
+  newStatusId   Int      @map("new_status_id")
+  comment       String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  application Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  admin       Admin              @relation(fields: [adminId], references: [id])
+  oldStatus   ApplicationStatus? @relation("OldStatus", fields: [oldStatusId], references: [id], onDelete: SetNull)
+  newStatus   ApplicationStatus  @relation("NewStatus", fields: [newStatusId], references: [id])
+
+  @@map("application_history")
+}
+
+model TrialLesson {
+  id            BigInt   @id @default(autoincrement())
+  applicationId BigInt   @map("application_id")
+  courseId      Int      @map("course_id")
+  branchId      Int      @map("branch_id")
+  teacherId     Int?     @map("teacher_id")
+  date          DateTime @db.Date
+  time          DateTime @db.Time
+  /// "pending" | "confirmed" | "completed" | "cancelled"
+  status        String   @default("pending") @db.VarChar(50)
+  comment       String?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  course      Course      @relation(fields: [courseId], references: [id])
+  branch      Branch      @relation(fields: [branchId], references: [id])
+  teacher     Teacher?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@map("trial_lessons")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(150)
+  photo       String?  @db.VarChar(500)
+  text        String
+  /// Rating 1–5
+  rating      Int      @default(5) @db.SmallInt
+  courseId    Int?     @map("course_id")
+  branchId    Int?     @map("branch_id")
+  isPublished Boolean  @default(false) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@map("reviews")
+}
+
+model Gallery {
+  id          BigInt   @id @default(autoincrement())
+  title       String?  @db.VarChar(150)
+  image       String   @db.VarChar(500)
+  description String?
+  branchId    Int?     @map("branch_id")
+  category    String?  @db.VarChar(100)
+  isPublished Boolean  @default(false) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@map("gallery")
+}
+
+model Faq {
+  id          Int     @id @default(autoincrement())
+  question    String  @db.VarChar(500)
+  answer      String
+  category    String? @db.VarChar(100)
+  isPublished Boolean @default(true) @map("is_published")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  @@map("faq")
+}
+
+model Page {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(150)
+  content     String
+  isPublished Boolean  @default(false) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("pages")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String
+  image       String?  @db.VarChar(500)
+  branchId    Int?     @map("branch_id")
+  eventDate   DateTime @map("event_date")
+  isPublished Boolean  @default(false) @map("is_published")
+
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@map("events")
+}
+
+model Media {
+  id         BigInt   @id @default(autoincrement())
+  fileName   String   @map("file_name") @db.VarChar(255)
+  fileUrl    String   @map("file_url") @db.VarChar(500)
+  fileType   String   @map("file_type") @db.VarChar(50)
+  fileSize   Int?     @map("file_size")
+  altText    String?  @map("alt_text") @db.VarChar(255)
+  uploadedBy BigInt?  @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  uploader Admin? @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+
+  @@map("media")
+}
+
+model Statistic {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(100)
+  description String  @db.VarChar(255)
+  icon        String? @db.VarChar(500)
+  sortOrder   Int     @default(0) @map("sort_order")
+  isActive    Boolean @default(true) @map("is_active")
+
+  @@map("statistics")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Contact {
+  id           Int     @id @default(autoincrement())
+  phone        String  @db.VarChar(30)
+  email        String? @db.VarChar(255)
+  whatsapp     String? @db.VarChar(255)
+  instagram    String? @db.VarChar(255)
+  telegram     String? @db.VarChar(255)
+  address      String? @db.VarChar(255)
+  workingHours String? @map("working_hours") @db.VarChar(255)
+
+  @@map("contacts")
+}
+
+model SocialLink {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(50)
+  url       String  @db.VarChar(500)
+  icon      String? @db.VarChar(500)
+  isActive  Boolean @default(true) @map("is_active")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  @@map("social_links")
+}
+
+model SiteSetting {
+  id          Int     @id @default(autoincrement())
+  key         String  @unique @db.VarChar(100)
+  value       String
+  /// "string" | "number" | "boolean" | "json"
+  type        String  @default("string") @db.VarChar(30)
+  description String? @db.VarChar(255)
+
+  @@map("site_settings")
+}
+
+model Language {
+  id        Int     @id @default(autoincrement())
+  code      String  @unique @db.VarChar(10)
+  name      String  @db.VarChar(50)
+  isActive  Boolean @default(true) @map("is_active")
+  isDefault Boolean @default(false) @map("is_default")
+
+  courseTranslations CourseTranslation[]
+
+  @@map("languages")
+}
+
+/// Polymorphic SEO record — pageType identifies the source model
+model Seo {
+  id            BigInt  @id @default(autoincrement())
+  /// e.g. "course" | "branch" | "teacher" | "page"
+  pageType      String  @map("page_type") @db.VarChar(50)
+  /// ID of the related record in the table identified by pageType
+  pageId        BigInt  @map("page_id")
+  title         String  @db.VarChar(255)
+  description   String?
+  canonicalUrl  String? @map("canonical_url") @db.VarChar(500)
+  ogTitle       String? @map("og_title") @db.VarChar(255)
+  ogDescription String? @map("og_description")
+  ogImage       String? @map("og_image") @db.VarChar(500)
+
+  @@unique([pageType, pageId])
+  @@map("seo")
+}

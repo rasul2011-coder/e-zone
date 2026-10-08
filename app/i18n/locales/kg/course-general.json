@@ -1,0 +1,28 @@
+{
+  "breadcrumb": "General English",
+  "title": "General English",
+  "subtitle": "Чоңдор үчүн сүйлөшүү жана иш кагаздар англис тили",
+  "description": "General English курсу тилдин бардык аспектилерин камтыйт: грамматика, лексика, угуу, сүйлөшүү, окуу жана жазуу. Сабактар кичине топтордо өтөт, бул ар бир студентке көңүл бурууга жана тез илгерилөөгө мүмкүндүк берет.",
+  "levels": {
+    "title": "Окуу деңгээлдери",
+    "items": [
+      { "name": "Elementary", "description": "Негизги сөз айкаштары жана күнүмдүк сөздүк запас" },
+      { "name": "Pre-Intermediate", "description": "Жөнөкөй диалогдор, негизги грамматика" },
+      { "name": "Intermediate", "description": "Турмуштук темаларда ишенимдүү баарлашуу" },
+      { "name": "Upper-Intermediate", "description": "Татаал тексттер, иш кагаздар байланышы" },
+      { "name": "Advanced", "description": "Тилди эркин билүү, академиялык жазуу" }
+    ]
+  },
+  "schedule": {
+    "title": "Жадыбал жана баасы",
+    "duration": "Сабактын узактыгы",
+    "duration_value": "90 мүнөт",
+    "frequency": "Жумасына сабак саны",
+    "frequency_value": "2–3 жолу",
+    "group_size": "Топтун өлчөмү",
+    "group_size_value": "8 адамга чейин",
+    "price": "Баасы",
+    "price_value": "3 500 сомдон/ай"
+  },
+  "cta": "General English'ке жазылуу"
+}

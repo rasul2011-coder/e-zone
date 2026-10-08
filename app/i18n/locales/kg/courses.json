@@ -1,0 +1,34 @@
+{
+  "breadcrumb": "Курстар",
+  "title": "Курстардын каталогу",
+  "subtitle": "Сизге ылайыктуу программаны табыңыз",
+  "filters": {
+    "label": "Чыпкалар",
+    "age": "Жаш",
+    "level": "Деңгээл",
+    "direction": "Багыт",
+    "search_placeholder": "Курсту издөө...",
+    "reset": "Чыпкаларды тазалоо",
+    "age_options": {
+      "all": "Каалаган жаш",
+      "kids": "Балдар (5–15)",
+      "teens": "Өспүрүмдөр (13–17)",
+      "adults": "Чоңдор (16+)"
+    },
+    "level_options": {
+      "all": "Бардык деңгээлдер",
+      "beginner": "Elementary",
+      "pre_intermediate": "Pre-Intermediate",
+      "intermediate": "Intermediate",
+      "upper": "Upper-Intermediate",
+      "advanced": "Advanced"
+    }
+  },
+  "card": {
+    "age_from": "{age} жаштан",
+    "age_range": "{from}–{to} жаш",
+    "price_from": "{price} сомдон/ай",
+    "details": "Толугураак"
+  },
+  "empty": "Сиздин суроо боюнча курстар табылган жок. Чыпкаларды өзгөртүп көрүңүз."
+}

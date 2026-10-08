@@ -1,0 +1,46 @@
+{
+  "login": {
+    "title": "Вход в админку",
+    "subtitle": "English Zone · Панель управления",
+    "email_label": "Email",
+    "email_placeholder": "admin@english-zone.kg",
+    "password_label": "Пароль",
+    "password_placeholder": "••••••••",
+    "submit": "Войти",
+    "submitting": "Проверяем...",
+    "error_invalid": "Неверный email или пароль",
+    "error_server": "Ошибка сервера. Попробуйте позже."
+  },
+  "verify": {
+    "title": "Подтверждение входа",
+    "subtitle": "Код отправлен в ваш Telegram",
+    "description": "Введите 6-значный код из Telegram-бота для завершения входа.",
+    "code_label": "Код подтверждения",
+    "code_placeholder": "000000",
+    "submit": "Подтвердить",
+    "submitting": "Проверяем...",
+    "back": "← Назад ко входу",
+    "error_invalid": "Неверный или просроченный код",
+    "error_expired": "Сессия истекла. Войдите заново.",
+    "error_server": "Ошибка сервера. Попробуйте позже."
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "Добро пожаловать,",
+    "logout": "Выйти",
+    "nav": {
+      "overview": "Обзор",
+      "applications": "Заявки",
+      "courses": "Курсы",
+      "teachers": "Преподаватели",
+      "branches": "Филиалы",
+      "settings": "Настройки"
+    },
+    "stats": {
+      "applications": "Заявок",
+      "courses": "Курсов",
+      "teachers": "Преподавателей",
+      "branches": "Филиалов"
+    }
+  }
+}

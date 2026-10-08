@@ -1,0 +1,46 @@
+{
+  "login": {
+    "title": "Админкага кириш",
+    "subtitle": "English Zone · Башкаруу панели",
+    "email_label": "Email",
+    "email_placeholder": "admin@english-zone.kg",
+    "password_label": "Сырсөз",
+    "password_placeholder": "••••••••",
+    "submit": "Кириш",
+    "submitting": "Текшерүүдө...",
+    "error_invalid": "Email же сырсөз туура эмес",
+    "error_server": "Сервер катасы. Кийинчерээк аракет кылыңыз."
+  },
+  "verify": {
+    "title": "Кирүүнү тастыктоо",
+    "subtitle": "Код Telegramга жөнөтүлдү",
+    "description": "Кирүүнү аяктоо үчүн Telegram-боттон 6 орундуу кодду киргизиңиз.",
+    "code_label": "Тастыктоо коду",
+    "code_placeholder": "000000",
+    "submit": "Тастыктоо",
+    "submitting": "Текшерүүдө...",
+    "back": "← Кирүүгө кайтуу",
+    "error_invalid": "Код туура эмес же мөөнөтү өттү",
+    "error_expired": "Сессия мөөнөтү өттү. Кайра кириңиз.",
+    "error_server": "Сервер катасы. Кийинчерээк аракет кылыңыз."
+  },
+  "dashboard": {
+    "title": "Башкаруу панели",
+    "welcome": "Кош келдиңиз,",
+    "logout": "Чыгуу",
+    "nav": {
+      "overview": "Жалпы",
+      "applications": "Арыздар",
+      "courses": "Курстар",
+      "teachers": "Мугалимдер",
+      "branches": "Филиалдар",
+      "settings": "Жөндөөлөр"
+    },
+    "stats": {
+      "applications": "Арыздар",
+      "courses": "Курстар",
+      "teachers": "Мугалимдер",
+      "branches": "Филиалдар"
+    }
+  }
+}

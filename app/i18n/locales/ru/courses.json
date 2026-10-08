@@ -1,0 +1,34 @@
+{
+  "breadcrumb": "Курсы",
+  "title": "Каталог курсов",
+  "subtitle": "Найдите программу, которая подходит именно вам",
+  "filters": {
+    "label": "Фильтры",
+    "age": "Возраст",
+    "level": "Уровень",
+    "direction": "Направление",
+    "search_placeholder": "Поиск курса...",
+    "reset": "Сбросить фильтры",
+    "age_options": {
+      "all": "Любой возраст",
+      "kids": "Дети (5–15)",
+      "teens": "Подростки (13–17)",
+      "adults": "Взрослые (16+)"
+    },
+    "level_options": {
+      "all": "Все уровни",
+      "beginner": "Elementary",
+      "pre_intermediate": "Pre-Intermediate",
+      "intermediate": "Intermediate",
+      "upper": "Upper-Intermediate",
+      "advanced": "Advanced"
+    }
+  },
+  "card": {
+    "age_from": "от {age} лет",
+    "age_range": "{from}–{to} лет",
+    "price_from": "от {price} сом/мес",
+    "details": "Подробнее"
+  },
+  "empty": "По вашему запросу курсов не найдено. Попробуйте изменить фильтры."
+}

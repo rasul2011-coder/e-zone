@@ -1,0 +1,28 @@
+{
+  "breadcrumb": "General English",
+  "title": "General English",
+  "subtitle": "Разговорный и деловой английский для взрослых",
+  "description": "Курс General English охватывает все аспекты языка: грамматику, лексику, аудирование, говорение, чтение и письмо. Занятия проходят в небольших группах, что позволяет уделять внимание каждому студенту и быстро прогрессировать.",
+  "levels": {
+    "title": "Уровни обучения",
+    "items": [
+      { "name": "Elementary", "description": "Базовые фразы и повседневный словарный запас" },
+      { "name": "Pre-Intermediate", "description": "Простые диалоги, базовая грамматика" },
+      { "name": "Intermediate", "description": "Уверенное общение на бытовые темы" },
+      { "name": "Upper-Intermediate", "description": "Сложные тексты, деловое общение" },
+      { "name": "Advanced", "description": "Свободное владение языком, академическое письмо" }
+    ]
+  },
+  "schedule": {
+    "title": "Расписание и стоимость",
+    "duration": "Продолжительность урока",
+    "duration_value": "90 минут",
+    "frequency": "Занятий в неделю",
+    "frequency_value": "2–3 раза",
+    "group_size": "Размер группы",
+    "group_size_value": "до 8 человек",
+    "price": "Стоимость",
+    "price_value": "от 3 500 сом/мес"
+  },
+  "cta": "Записаться на General English"
+}

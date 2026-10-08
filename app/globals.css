@@ -1,26 +1,199 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENGLISH ZONE — DESIGN SYSTEM
+   ─────────────────────────────────────────────────────────────────────────
+   LIGHT  →  Clean white page, light glassy header, vivid orange, deep navy
+             accent sections. Modern, airy, premium feel.
+   DARK   →  Deep navy, rich contrast, same orange accents.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Brand (shared) ───────────────────────────────────────────────────── */
+  --orange:       #f97316;
+  --orange-dark:  #ea6c0a;
+  --orange-light: #fff3e8;
+  --navy:         #1a2a4a;
+  --navy-mid:     #1e3460;
+
+  /* ── LIGHT THEME ──────────────────────────────────────────────────────── */
+  --bg:           #fafafa;
+  --bg-alt:       #f5f5f5;
+  --bg-card:      #ffffff;
+  --border:       #e8e8e8;
+  --text:         #111111;
+  --text-muted:   #555555;
+  --text-subtle:  #999999;
+
+  /* Header — light, glassy */
+  --header-bg:        rgba(255,255,255,0.92);
+  --header-text:      #111111;
+  --header-border:    rgba(0,0,0,0.08);
+  --header-nav-hover: rgba(0,0,0,0.05);
+  --header-nav-active:rgba(249,115,22,0.1);
+  --header-nav-active-text: #f97316;
+
+  /* Dark accent sections */
+  --bg-section:      #1e3a6e;
+  --bg-section-mid:  #254899;
+  --bg-section-deep: #0f1d35;
+
+  /* Card headers (photo bg, map bg) */
+  --bg-card-header:   #f0f0f0;
+  --bg-card-header-2: #e2e2e2;
 }
 
+html.dark {
+  /* ── DARK THEME ───────────────────────────────────────────────────────── */
+  --bg:           #0d1117;
+  --bg-alt:       #161b22;
+  --bg-card:      #1a2235;
+  --border:       #2a3550;
+  --text:         #edf1fc;
+  --text-muted:   #8fa3c8;
+  --text-subtle:  #5e7399;
+
+  --header-bg:         rgba(15,29,53,0.95);
+  --header-text:       #ffffff;
+  --header-border:     rgba(255,255,255,0.06);
+  --header-nav-hover:  rgba(255,255,255,0.05);
+  --header-nav-active: rgba(249,115,22,0.15);
+  --header-nav-active-text: #fb923c;
+
+  --bg-section:      #1a2a4a;
+  --bg-section-mid:  #1e3460;
+  --bg-section-deep: #0f1d35;
+
+  --bg-card-header:   #1a2a4a;
+  --bg-card-header-2: #1e3460;
+}
+
+/* ─── Tailwind v4 bridge ─────────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:    var(--bg);
+  --color-surface:       var(--bg-alt);
+  --color-card:          var(--bg-card);
+  --color-border:        var(--border);
+  --color-text:          var(--text);
+  --color-muted:         var(--text-muted);
+  --color-subtle:        var(--text-subtle);
+  --color-navy:          var(--navy);
+  --color-navy-mid:      var(--navy-mid);
+  --color-brand:         var(--orange);
+  --color-brand-dark:    var(--orange-dark);
+  --color-section:       var(--bg-section);
+  --color-section-mid:   var(--bg-section-mid);
+  --color-section-deep:  var(--bg-section-deep);
+  --color-card-header:   var(--bg-card-header);
+  --color-card-header-2: var(--bg-card-header-2);
+  --font-sans:           var(--font-geist-sans);
+  --font-mono:           var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Theme transitions ──────────────────────────────────────────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+.animate-spin, [class*="animate-"],
+.transition, [class*="transition-"], [class*="duration-"] {
+  transition-property: revert;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection { background: rgba(249,115,22,0.2); color: var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header-bg {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Nav link states ─────────────────────────────────────────────────────── */
+.nav-link {
+  color: var(--header-text);
+  opacity: 0.65;
+}
+.nav-link:hover {
+  opacity: 1;
+  background: var(--header-nav-hover);
+}
+.nav-link-active {
+  color: var(--header-nav-active-text);
+  background: var(--header-nav-active);
+  opacity: 1;
+}
+
+/* ── Section hero — dark band with smooth edge fades ────────────────────── */
+.section-hero {
+  background: var(--bg-section);
+  position: relative;
+  overflow: hidden;
+}
+.section-hero::before,
+.section-hero::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 100px;
+  pointer-events: none;
+  z-index: 2;
+}
+.section-hero::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+}
+.section-hero::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+}
+
+.section-hero-deep {
+  background: var(--bg-section-deep);
+  position: relative;
+  overflow: hidden;
+}
+.section-hero-deep::before,
+.section-hero-deep::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 100px;
+  pointer-events: none;
+  z-index: 2;
+}
+.section-hero-deep::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+}
+.section-hero-deep::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+}
+
+/* ── Card photo / map header ─────────────────────────────────────────────── */
+.card-header-gradient {
+  background: linear-gradient(135deg, var(--bg-card-header), var(--bg-card-header-2));
 }

@@ -1,0 +1,36 @@
+{
+  "breadcrumb": "IELTS Prep",
+  "title": "IELTS Preparation",
+  "subtitle": "Эл аралык IELTS экзаменине интенсивдүү даярдоо",
+  "description": "Биздин IELTS Prep курсу жогорку балл алгысы келген адамдар үчүн атайын иштелип чыккан. Мугалимдер экзаменаторлордун бардык талаптарын билишет жана сизге төрт бөлүктүн ар биринде жардам беришет: Listening, Reading, Writing жана Speaking.",
+  "structure": {
+    "title": "Даярдоонун түзүмү",
+    "items": [
+      { "section": "Listening", "description": "Угуп кабыл алуусун машыктыруу, Academic жана General Training тапшырма түрлөрү" },
+      { "section": "Reading", "description": "Академиялык тексттер менен иштөө, маалымат издөө стратегиялары" },
+      { "section": "Writing", "description": "Task 1: графиктерди жана диаграммаларды сүрөттөө. Task 2: аргументациясы бар эссе" },
+      { "section": "Speaking", "description": "Үч бөлүктүү интервью, айтылышы жана сүйлөө жеңилдигин жогорулатуу" }
+    ]
+  },
+  "results": {
+    "title": "Биздин студенттердин натыйжалары",
+    "avg_score": "7.0+",
+    "avg_score_label": "бүтүрүүчүлөрдүн орточо баллы",
+    "pass_rate": "92%",
+    "pass_rate_label": "студенттер максаттуу баллга жетишет",
+    "study_abroad": "200+",
+    "study_abroad_label": "чет өлкө университеттерине кирген"
+  },
+  "schedule": {
+    "title": "Жадыбал жана баасы",
+    "duration": "Сабактын узактыгы",
+    "duration_value": "120 мүнөт",
+    "frequency": "Жумасына сабак саны",
+    "frequency_value": "3 жолу",
+    "group_size": "Топтун өлчөмү",
+    "group_size_value": "6 адамга чейин",
+    "price": "Баасы",
+    "price_value": "5 500 сомдон/ай"
+  },
+  "cta": "IELTS Prep'ке жазылуу"
+}
