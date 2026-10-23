@@ -5,6 +5,9 @@ import {
   isTimestampValid, 
   FinikWebhookData 
 } from '@/lib/finik';
+import { db, schema } from '@/lib/db';
+import { eq } from 'drizzle-orm';
+import { sendTelegramMessage } from '@/lib/telegram';
 
 /**
  * POST /api/finik/webhook
@@ -107,35 +110,53 @@ export async function POST(request: NextRequest) {
       console.log(`Date:           ${new Date(body.transactionDate).toLocaleString('ru-RU')}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       
-      // 9. ЗДЕСЬ ДОБАВЬТЕ ЛОГИКУ ОБРАБОТКИ УСПЕШНОГО ПЛАТЕЖА
-      // Например:
-      // - Обновление статуса заявки в БД (Application)
-      // - Создание записи о платеже
-      // - Отправка email уведомления пользователю
-      // - Отправка уведомления в Telegram админу
-      // - Начисление баланса и т.д.
-      
-      // Пример обновления статуса заявки (раскомментируйте и адаптируйте):
-      /*
-      import { db } from '@/lib/db'; // импортируйте ваш Prisma Client
-      
-      // Обновляем статус заявки на "Оплачено"
+      // 9. Сохранить успешную оплату в БД и уведомить Telegram
       if (workId) {
-        const applicationId = BigInt(workId);
-        
-        await db.application.update({
-          where: { id: applicationId },
-          data: {
-            // Добавьте поля для хранения информации о платеже
-            // или обновите статус
-            comment: `Платеж успешно выполнен. Transaction ID: ${body.transactionId}`,
-            updatedAt: new Date(),
-          },
-        });
-        
-        console.log(`✓ Application ${workId} updated with payment info`);
+        try {
+          // Найти статус "Подтверждена" или "Оплачена"
+          const statuses = await db.select().from(schema.applicationStatuses).limit(10);
+          const paidStatus = statuses.find(s => s.name === 'Подтверждена') 
+            || statuses.find(s => s.name === 'Новая');
+
+          const appId = parseInt(workId);
+          if (!isNaN(appId)) {
+            // Обновить заявку — пометить как оплаченную
+            await db.update(schema.applications)
+              .set({
+                isPaid:        true,
+                paymentAmount: body.amount || 5,
+                statusId:      paidStatus?.id ?? 1,
+                updatedAt:     new Date(),
+              })
+              .where(eq(schema.applications.id, appId));
+
+            // Получить данные заявки для Telegram
+            const [app] = await db.select().from(schema.applications)
+              .where(eq(schema.applications.id, appId)).limit(1);
+
+            if (app) {
+              const roleLabel = app.role === 'parent' ? '👨‍👧 Родитель'
+                : app.role === 'student' ? '🎓 Ученик' : null;
+
+              const msg =
+                `💰 <b>Оплата получена!</b>\n\n` +
+                `👤 Имя:      <b>${app.name}</b>\n` +
+                `📞 Телефон:  ${app.phone}\n` +
+                (app.email       ? `📧 Email:    ${app.email}\n`       : '') +
+                (roleLabel       ? `🙋 Роль:     ${roleLabel}\n`       : '') +
+                (app.age         ? `🎂 Возраст:  ${app.age} лет\n`    : '') +
+                (app.courseName  ? `📚 Курс:     ${app.courseName}\n`  : '') +
+                `💵 Сумма:    ${body.amount || 5} сом\n` +
+                `🔑 Transaction: ${body.transactionId}\n` +
+                `\n🕐 ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Bishkek' })}`;
+
+              sendTelegramMessage(msg).catch(e => console.error('Telegram error:', e));
+            }
+          }
+        } catch (dbErr) {
+          console.error('DB update error on webhook:', dbErr);
+        }
       }
-      */
       
     } 
     // 10. Обработка неудачного платежа

@@ -3,8 +3,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ENGLISH ZONE — DESIGN SYSTEM
    ─────────────────────────────────────────────────────────────────────────
-   LIGHT  →  Clean white page, light glassy header, vivid orange, deep navy
-             accent sections. Modern, airy, premium feel.
+   LIGHT  →  Bright white page, vivid orange accents, warm tones.
+             Clean, airy, modern. No dark navy sections.
    DARK   →  Deep navy, rich contrast, same orange accents.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -12,35 +12,35 @@
   /* ── Brand (shared) ───────────────────────────────────────────────────── */
   --orange:       #f97316;
   --orange-dark:  #ea6c0a;
-  --orange-light: #fff3e8;
+  --orange-light: #fff7ed;
   --navy:         #1a2a4a;
   --navy-mid:     #1e3460;
 
   /* ── LIGHT THEME ──────────────────────────────────────────────────────── */
-  --bg:           #fafafa;
-  --bg-alt:       #f5f5f5;
+  --bg:           #ffffff;
+  --bg-alt:       #f9f7f5;
   --bg-card:      #ffffff;
-  --border:       #e8e8e8;
-  --text:         #111111;
-  --text-muted:   #555555;
-  --text-subtle:  #999999;
+  --border:       #e5e2de;
+  --text:         #1a1108;
+  --text-muted:   #6b5e52;
+  --text-subtle:  #a89b90;
 
-  /* Header — light, glassy */
-  --header-bg:        rgba(255,255,255,0.92);
-  --header-text:      #111111;
-  --header-border:    rgba(0,0,0,0.08);
-  --header-nav-hover: rgba(0,0,0,0.05);
-  --header-nav-active:rgba(249,115,22,0.1);
-  --header-nav-active-text: #f97316;
+  /* Header */
+  --header-bg:             rgba(255,255,255,0.95);
+  --header-text:           #1a1108;
+  --header-border:         rgba(0,0,0,0.07);
+  --header-nav-hover:      rgba(249,115,22,0.06);
+  --header-nav-active:     rgba(249,115,22,0.12);
+  --header-nav-active-text: #ea6c0a;
 
-  /* Dark accent sections */
-  --bg-section:      #1e3a6e;
-  --bg-section-mid:  #254899;
-  --bg-section-deep: #0f1d35;
+  /* Accent sections — warm orange gradient instead of dark navy */
+  --bg-section:      #fff7ed;
+  --bg-section-mid:  #ffedd5;
+  --bg-section-deep: #fff3e0;
 
-  /* Card headers (photo bg, map bg) */
-  --bg-card-header:   #f0f0f0;
-  --bg-card-header-2: #e2e2e2;
+  /* Card headers */
+  --bg-card-header:   #fff3e8;
+  --bg-card-header-2: #ffe8d0;
 }
 
 html.dark {
@@ -146,7 +146,7 @@ body {
   opacity: 1;
 }
 
-/* ── Section hero — dark band with smooth edge fades ────────────────────── */
+/* ── Section hero — warm orange band ────────────────────────────────────── */
 .section-hero {
   background: var(--bg-section);
   position: relative;
@@ -157,7 +157,7 @@ body {
   content: '';
   position: absolute;
   left: 0; right: 0;
-  height: 100px;
+  height: 80px;
   pointer-events: none;
   z-index: 2;
 }
@@ -180,7 +180,7 @@ body {
   content: '';
   position: absolute;
   left: 0; right: 0;
-  height: 100px;
+  height: 80px;
   pointer-events: none;
   z-index: 2;
 }

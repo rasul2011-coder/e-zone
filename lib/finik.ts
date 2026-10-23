@@ -31,10 +31,13 @@ const FINIK_ACCOUNT_ID = process.env.FINIK_ACCOUNT_ID;
 // Чтение приватного ключа
 const FINIK_PRIVATE_KEY = (() => {
   if (process.env.FINIK_PRIVATE_KEY) {
-    const key = process.env.FINIK_PRIVATE_KEY.trim();
+    // Убираем лишние пробелы и заменяем \n на реальные переводы строк
+    const key = process.env.FINIK_PRIVATE_KEY.trim().replace(/\\n/g, '\n');
     if (!isInitialized) {
       if (process.env.NODE_ENV === 'development') {
         console.log('✓ Using FINIK_PRIVATE_KEY from environment');
+        console.log('Key length:', key.length);
+        console.log('Starts with:', key.substring(0, 30));
       }
       isInitialized = true;
     }
@@ -185,12 +188,25 @@ export async function createFinikPayment(data: CreatePaymentData): Promise<strin
     headers['signature'] = signature;
   }
   
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔵 Finik payment request:', {
+      url,
+      body,
+      hasSignature: !!signature,
+      env: FINIK_ENV,
+    });
+  }
+  
   const response = await fetch(url, {
     method: requestData.httpMethod,
     headers,
     body: JSON.stringify(body),
     redirect: 'manual',
   });
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔵 Finik response status:', response.status);
+  }
 
   // Finik возвращает 302 с URL платежной страницы
   if (response.status === 302) {
@@ -204,14 +220,22 @@ export async function createFinikPayment(data: CreatePaymentData): Promise<strin
       console.error('Payment URL contains status=failed');
     }
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Payment URL received:', paymentUrl);
+    }
+    
     return paymentUrl;
   }
 
   // Обработка ошибок
   const errorText = await response.text();
-  console.error('Finik payment creation failed:', response.status);
+  console.error('❌ Finik payment creation failed:', {
+    status: response.status,
+    error: errorText,
+    headers: Object.fromEntries(response.headers.entries()),
+  });
   
-  throw new Error(`Payment creation failed: ${errorText}`);
+  throw new Error(`Payment creation failed (${response.status}): ${errorText}`);
 }
 
 /**

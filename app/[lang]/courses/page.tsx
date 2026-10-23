@@ -6,6 +6,7 @@ import type { Locale } from '@/app/i18n/config'
 import type { Metadata } from 'next'
 import { db, schema } from '@/lib/db'
 import { eq } from 'drizzle-orm'
+import { MessageCircle, Palette, GraduationCap } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,21 +20,21 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 const COURSES = [
   {
     slug: 'general-english',
-    emoji: '🗣️',
+    icon: MessageCircle,
     accent: 'orange',
     ageFrom: 16, ageTo: null,
     price: 3500,
   },
   {
     slug: 'kids-club',
-    emoji: '🎨',
+    icon: Palette,
     accent: 'blue',
     ageFrom: 5, ageTo: 15,
     price: 3000,
   },
   {
     slug: 'ielts-prep',
-    emoji: '🎓',
+    icon: GraduationCap,
     accent: 'violet',
     ageFrom: 14, ageTo: null,
     price: 5500,
@@ -108,9 +109,11 @@ export default async function CoursesPage({ params }: { params: Promise<{ lang: 
     { id: 5,  courseName: 'IELTS Prep',      branchName: 'Филиал на Чуй',       dayOfWeek: 2, startTime: '14:00', endTime: '16:00', format: 'offline' },
     { id: 6,  courseName: 'IELTS Prep',      branchName: 'Филиал на Ибраимова', dayOfWeek: 4, startTime: '14:00', endTime: '16:00', format: 'offline' },
     { id: 7,  courseName: 'IELTS Prep',      branchName: 'Филиал на Манас',     dayOfWeek: 6, startTime: '10:00', endTime: '12:00', format: 'offline' },
+    { id: 12, courseName: 'IELTS Prep',      branchName: 'Онлайн',              dayOfWeek: 3, startTime: '19:00', endTime: '21:00', format: 'online'  },
     { id: 8,  courseName: 'Kids Club',       branchName: 'Филиал на Чуй',       dayOfWeek: 1, startTime: '15:00', endTime: '16:00', format: 'offline' },
     { id: 9,  courseName: 'Kids Club',       branchName: 'Филиал Асанбай',      dayOfWeek: 3, startTime: '15:00', endTime: '16:00', format: 'offline' },
     { id: 10, courseName: 'Kids Club',       branchName: 'Филиал Асанбай',      dayOfWeek: 5, startTime: '15:00', endTime: '16:00', format: 'offline' },
+    { id: 11, courseName: 'Kids Club',       branchName: 'Онлайн',              dayOfWeek: 6, startTime: '11:00', endTime: '12:00', format: 'online'  },
   ]
 
   const groupList: GroupRow[] = groups.length > 0 ? (groups as GroupRow[]) : PLACEHOLDER_GROUPS
@@ -186,8 +189,11 @@ export default async function CoursesPage({ params }: { params: Promise<{ lang: 
                   className={`group flex flex-col rounded-3xl border ${ac.border} bg-[var(--bg-card)] overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${ac.glow}`}>
                   {/* Top */}
                   <div className="flex items-start justify-between p-6 pb-0">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--bg-alt)] text-3xl">
-                      {c.emoji}
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--bg-alt)] text-orange-500">
+                      {(() => {
+                        const Icon = c.icon
+                        return <Icon className="w-7 h-7" />
+                      })()}
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${ac.tag}`}>
                       {ageStr}
@@ -248,11 +254,11 @@ export default async function CoursesPage({ params }: { params: Promise<{ lang: 
             <div className="space-y-8">
               {Object.entries(byCourse).map(([courseName, courseGroups]) => (
                 <div key={courseName}>
-                  <h3 className="text-sm font-semibold text-orange-500 uppercase tracking-widest mb-3">{courseName}</h3>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  <h3 className="text-sm font-semibold text-orange-500 uppercase tracking-widest mb-3 text-center">{courseName}</h3>
+                  <div className="flex flex-wrap justify-center gap-3">
                     {courseGroups.map((g, idx) => (
                       <div key={g.id}
-                        className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-4 hover:border-orange-500/30 hover:shadow-md transition">
+                        className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-4 hover:border-orange-500/30 hover:shadow-md transition w-[200px]">
                         {/* Day badge + time */}
                         <div className="flex items-center gap-2 mb-3">
                           <span className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold shrink-0 ${DAY_COLORS[(g.dayOfWeek - 1) % DAY_COLORS.length]}`}>
@@ -268,18 +274,12 @@ export default async function CoursesPage({ params }: { params: Promise<{ lang: 
                           </div>
                         </div>
                         {/* Branch */}
-                        <p className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-4">
+                        <p className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500 shrink-0">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                           </svg>
                           {g.branchName ?? (locale === 'ru' ? 'Филиал уточняется' : 'Филиал так болот')}
                         </p>
-                        {/* CTA */}
-                        <Link href={`/${locale}/register`}
-                          className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20 px-3 py-2 text-xs font-semibold text-orange-500 hover:bg-orange-500 hover:text-white transition">
-                          {locale === 'ru' ? 'Записаться' : 'Жазылуу'}
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </Link>
                       </div>
                     ))}
                   </div>
@@ -301,7 +301,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ lang: 
                 ? 'Запишитесь на бесплатное тестирование — мы сами определим ваш уровень и подберём программу'
                 : 'Акысыз тестирлөөгө жазылыңыз — биз деңгээлиңизди аныктап, программаны тандайбыз'}
             </p>
-            <Link href={`/${locale}/register`}
+            <Link href={`/${locale}/apply`}
               className="relative inline-flex items-center gap-2 rounded-full bg-orange-500 px-8 py-3.5 text-base font-semibold text-white hover:bg-orange-600 transition shadow-lg shadow-orange-500/30">
               {tc.cta.trial}
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

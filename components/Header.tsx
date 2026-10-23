@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import LanguageSwitcher from './LanguageSwitcher'
 import ThemeToggle from './ThemeToggle'
-import AuthButton from './AuthButton'
 import { useTheme } from './ThemeProvider'
 import type { Locale } from '@/app/i18n/config'
 
@@ -92,19 +91,17 @@ export default function Header({ locale, nav, applyLabel }: Props) {
           <div className="flex items-center gap-2">
             <ThemeToggle isDark={isDark} />
             <LanguageSwitcher currentLocale={locale} />
-            <AuthButton locale={locale} isDark={isDark} />
 
-            {/* Payment button */}
+            {/* Apply button */}
             <Link
-              href={`/${locale}/apply/thank-you`}
+              href={`/${locale}/apply`}
               className="hidden items-center gap-1.5 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition shadow-lg shadow-orange-500/30 lg:flex"
               suppressHydrationWarning
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                <line x1="1" y1="10" x2="23" y2="10"/>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
               </svg>
-              {locale === 'kg' ? 'Төлөө' : 'Оплатить'}
+              {locale === 'kg' ? 'Жазылуу' : 'Записаться'}
             </Link>
 
             {/* Burger */}
@@ -186,22 +183,14 @@ export default function Header({ locale, nav, applyLabel }: Props) {
 
         {/* Drawer footer */}
         <div className={`border-t px-5 py-5 space-y-3 ${isDark ? 'border-white/10' : 'border-gray-100'}`}>
-          <Link href={`/${locale}/apply/thank-you`} onClick={() => setMenuOpen(false)}
+          <Link href={`/${locale}/apply`} onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center gap-2 w-full rounded-xl bg-orange-500 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-orange-600 transition shadow-lg shadow-orange-500/30">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-              <line x1="1" y1="10" x2="23" y2="10"/>
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
             </svg>
-            {locale === 'kg' ? 'Төлөө' : 'Оплатить'}
+            {locale === 'kg' ? 'Жазылуу' : 'Записаться'}
           </Link>
-          <p className={`text-center text-xs ${isDark ? 'text-white/40' : 'text-gray-400'}`} suppressHydrationWarning>
-            {locale === 'kg' ? 'Аккаунт барбы?' : 'Уже есть аккаунт?'}{' '}
-            <Link href={`/${locale}/login`} onClick={() => setMenuOpen(false)}
-              className="font-semibold text-orange-500 hover:text-orange-600 transition">
-              {locale === 'kg' ? 'Кирүү' : 'Войти'}
-            </Link>
-          </p>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center gap-3 pt-2">
             <LanguageSwitcher currentLocale={locale} />
             <ThemeToggle isDark={isDark} />
           </div>

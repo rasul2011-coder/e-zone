@@ -5,7 +5,7 @@ import { count } from 'drizzle-orm'
 
 /**
  * POST /api/admin/seed
- * Seeds placeholder teachers and gallery items if the tables are empty.
+ * Seeds courses, branches, statuses, teachers, and gallery if tables are empty.
  * Only callable by authenticated admins.
  */
 export async function POST(req: NextRequest) {
@@ -13,6 +13,134 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const results: string[] = []
+
+  // ── Seed application statuses ────────────────────────────────────────────
+  const [{ count: statusCount }] = await db.select({ count: count() }).from(schema.applicationStatuses)
+  
+  if (Number(statusCount) === 0) {
+    const statuses = [
+      { name: 'Новая', description: 'Новая заявка' },
+      { name: 'Ожидает оплаты', description: 'Ожидает подтверждения оплаты' },
+      { name: 'Оплачена', description: 'Оплата подтверждена' },
+      { name: 'В обработке', description: 'Заявка в обработке' },
+      { name: 'Завершена', description: 'Заявка обработана' },
+      { name: 'Отменена', description: 'Заявка отменена' },
+    ]
+    for (const s of statuses) {
+      await db.insert(schema.applicationStatuses).values(s)
+    }
+    results.push(`✓ Добавлено ${statuses.length} статусов заявок`)
+  } else {
+    results.push(`— Статусы уже есть (${statusCount})`)
+  }
+
+  // ── Seed courses ─────────────────────────────────────────────────────────
+  const [{ count: courseCount }] = await db.select({ count: count() }).from(schema.courses)
+  
+  if (Number(courseCount) === 0) {
+    const courses = [
+      {
+        name: 'General English',
+        slug: 'general-english',
+        shortDescription: 'Разговорный и деловой английский для взрослых',
+        description: 'Комплексный курс английского языка для взрослых. Развитие всех навыков: говорение, аудирование, чтение, письмо.',
+        price: '3500',
+        duration: '3 месяца',
+        ageFrom: 16,
+        ageTo: null,
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        name: 'Kids Club',
+        slug: 'kids-club',
+        shortDescription: 'Английский для детей 5-15 лет',
+        description: 'Увлекательные занятия английским для детей. Игровой формат, песни, творчество.',
+        price: '3000',
+        duration: '3 месяца',
+        ageFrom: 5,
+        ageTo: 15,
+        isActive: true,
+        sortOrder: 2,
+      },
+      {
+        name: 'IELTS Prep',
+        slug: 'ielts-prep',
+        shortDescription: 'Подготовка к экзамену IELTS',
+        description: 'Интенсивная подготовка к IELTS. Разбор всех секций, стратегии, mock-тесты.',
+        price: '5500',
+        duration: '3 месяца',
+        ageFrom: 14,
+        ageTo: null,
+        isActive: true,
+        sortOrder: 3,
+      },
+    ]
+    for (const c of courses) {
+      await db.insert(schema.courses).values(c)
+    }
+    results.push(`✓ Добавлено ${courses.length} курсов`)
+  } else {
+    results.push(`— Курсы уже есть (${courseCount})`)
+  }
+
+  // ── Seed branches ────────────────────────────────────────────────────────
+  const [{ count: branchCount }] = await db.select({ count: count() }).from(schema.branches)
+  
+  if (Number(branchCount) === 0) {
+    const branches = [
+      {
+        name: 'Филиал на Чуй',
+        slug: 'chui',
+        description: 'Центральный филиал в самом сердце Бишкека',
+        address: 'ул. Чуй 123, Бишкек',
+        phone: '+996 700 000 001',
+        email: 'chui@englishzone.kg',
+        workingHours: 'Пн-Пт: 9:00-20:00, Сб: 10:00-18:00',
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        name: 'Филиал на Манас',
+        slug: 'manas',
+        description: 'Филиал на проспекте Манас',
+        address: 'пр. Манас 45, Бишкек',
+        phone: '+996 700 000 002',
+        email: 'manas@englishzone.kg',
+        workingHours: 'Пн-Пт: 9:00-20:00, Сб: 10:00-18:00',
+        isActive: true,
+        sortOrder: 2,
+      },
+      {
+        name: 'Филиал на Ибраимова',
+        slug: 'ibraimova',
+        description: 'Уютный филиал на улице Ибраимова',
+        address: 'ул. Ибраимова 78, Бишкек',
+        phone: '+996 700 000 003',
+        email: 'ibraimova@englishzone.kg',
+        workingHours: 'Пн-Пт: 9:00-20:00, Сб: 10:00-18:00',
+        isActive: true,
+        sortOrder: 3,
+      },
+      {
+        name: 'Филиал Асанбай',
+        slug: 'asanbay',
+        description: 'Филиал в микрорайоне Асанбай',
+        address: 'мкр. Асанбай, ул. Ахунбаева 12, Бишкек',
+        phone: '+996 700 000 004',
+        email: 'asanbay@englishzone.kg',
+        workingHours: 'Пн-Пт: 9:00-20:00, Сб: 10:00-18:00',
+        isActive: true,
+        sortOrder: 4,
+      },
+    ]
+    for (const b of branches) {
+      await db.insert(schema.branches).values(b)
+    }
+    results.push(`✓ Добавлено ${branches.length} филиалов`)
+  } else {
+    results.push(`— Филиалы уже есть (${branchCount})`)
+  }
 
   // ── Seed teachers ────────────────────────────────────────────────────────
   const [{ count: teacherCount }] = await db.select({ count: count() }).from(schema.teachers)

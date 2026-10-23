@@ -47,6 +47,8 @@ export async function GET(req: NextRequest) {
       isPaid:          schema.applications.isPaid,
       paymentAmount:   schema.applications.paymentAmount,
       paymentReceipt:  schema.applications.paymentReceipt,
+      age:             schema.applications.age,
+      role:            schema.applications.role,
       createdAt:       schema.applications.createdAt,
     })
     .from(schema.applications)

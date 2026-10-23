@@ -56,14 +56,14 @@ export default async function TeachersPage({ params }: { params: Promise<{ lang:
       </div>
 
       {/* Header */}
-      <section className="section-hero py-16 relative overflow-hidden">
+      <section className="py-16 bg-gradient-to-b from-orange-50 to-[var(--bg)] relative overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px,white 1px,transparent 0)', backgroundSize: '28px 28px' }} />
-        <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
+          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px,#f97316 1px,transparent 0)', backgroundSize: '28px 28px' }} />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-orange-400/15 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-4 md:px-8 text-center">
-          <span className="mb-4 inline-block rounded-full bg-orange-500/15 px-4 py-1.5 text-sm font-semibold text-orange-400">{t.title}</span>
-          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">{t.title}</h1>
-          <p className="mt-4 text-white/60 max-w-xl mx-auto">{t.subtitle}</p>
+          <span className="mb-4 inline-block rounded-full bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600">{t.title}</span>
+          <h1 className="text-3xl font-extrabold text-[var(--text)] sm:text-4xl">{t.title}</h1>
+          <p className="mt-4 text-[var(--text-muted)] max-w-xl mx-auto">{t.subtitle}</p>
         </div>
       </section>
 

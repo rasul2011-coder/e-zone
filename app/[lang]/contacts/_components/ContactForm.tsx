@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { usePhoneFormat } from '@/hooks/usePhoneFormat'
 
 interface Props {
   locale: string
@@ -17,6 +18,7 @@ interface Props {
 export default function ContactForm({ t }: Props) {
   const [sent, setSent]     = useState(false)
   const [loading, setLoading] = useState(false)
+  const [phone, handlePhoneChange] = usePhoneFormat()
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -50,7 +52,7 @@ export default function ContactForm({ t }: Props) {
       </div>
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">{t.form.phone}</label>
-        <input required type="tel" placeholder={t.form.phone_placeholder} className={inputCls} />
+        <input required type="tel" value={phone} onChange={handlePhoneChange} placeholder={t.form.phone_placeholder} className={inputCls} />
       </div>
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">{t.form.message}</label>

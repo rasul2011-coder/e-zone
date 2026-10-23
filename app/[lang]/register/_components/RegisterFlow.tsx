@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, type FormEvent, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { usePhoneFormat } from '@/hooks/usePhoneFormat'
+import CustomSelect from '@/components/CustomSelect'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ChatMessage { role: 'assistant' | 'user'; text: string }
@@ -15,13 +17,17 @@ interface UserData {
   branch: string
   comment: string
   paymentAmount: number
+  age: string
+  role: string
 }
 
-const COURSES = [
+const COURSES_FALLBACK = [
   { name: 'General English', price: 3500, desc: 'Разговорный и деловой английский, 16+' },
   { name: 'Kids Club',       price: 3000, desc: 'Английский для детей 5–15 лет' },
   { name: 'IELTS Prep',      price: 5500, desc: 'Подготовка к IELTS, 14+' },
 ]
+
+const BRANCHES_FALLBACK = ['Филиал на Чуй', 'Филиал на Манас', 'Филиал на Ибраимова', 'Филиал Асанбай']
 
 const QUICK_PICKS_RU = ['General English', 'Kids Club', 'IELTS Prep']
 const QUICK_PICKS_KG = ['General English', 'Kids Club', 'IELTS Prep']
@@ -43,6 +49,15 @@ function AiStep({ locale, onDone }: {
   const [selected, setSelected] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLTextAreaElement>(null)
+  const [quickPicks, setQuickPicks] = useState<string[]>(QUICK_PICKS_RU)
+
+  // Load courses from API for quick picks
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setQuickPicks(d.data.map((c: { name: string }) => c.name)) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
@@ -78,7 +93,7 @@ function AiStep({ locale, onDone }: {
       const reply: string = data.reply || data.error || (isRu ? 'Ошибка. Попробуйте ещё.' : 'Ката болду.')
 
       // Auto-detect course recommendation
-      const detected = COURSES.find(c => reply.includes(c.name))
+      const detected = COURSES_FALLBACK.find(c => reply.includes(c.name))
       if (detected && !selected) setSelected(detected.name)
 
       setMessages(prev => [
@@ -144,7 +159,7 @@ function AiStep({ locale, onDone }: {
       {/* Quick picks */}
       {messages.length <= 2 && (
         <div className="flex gap-2 flex-wrap py-2">
-          {QUICK_PICKS_RU.map(name => (
+          {quickPicks.map(name => (
             <button key={name} onClick={() => pickCourse(name)}
               className="rounded-full border border-[var(--border)] bg-[var(--bg-alt)] px-3 py-1.5 text-xs text-[var(--text-muted)] hover:border-orange-500/50 hover:text-orange-500 transition">
               {name}
@@ -202,25 +217,38 @@ function AiStep({ locale, onDone }: {
 function PaymentStep({ locale, courseName, onDone }: {
   locale: string
   courseName: string
-  onDone: (data: { name: string; phone: string; email: string; branch: string }) => void
+  onDone: (data: { name: string; phone: string; email: string; branch: string; age: string; role: string }) => void
 }) {
   const isRu = locale !== 'kg'
-  const course = COURSES.find(c => c.name === courseName)
+  const course = COURSES_FALLBACK.find(c => c.name === courseName)
   const price  = course?.price ?? 3500
 
   const [name,   setName]   = useState('')
-  const [phone,  setPhone]  = useState('')
+  const [phone,  handlePhoneChange]  = usePhoneFormat()
   const [email,  setEmail]  = useState('')
   const [branch, setBranch] = useState('')
+  const [age,    setAge]    = useState('')
+  const [role,   setRole]   = useState('')
   const [error,  setError]  = useState('')
 
+  const [branches, setBranches] = useState<string[]>(BRANCHES_FALLBACK)
+
+  useEffect(() => {
+    fetch('/api/branches')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setBranches(d.data.map((b: { name: string }) => b.name)) })
+      .catch(() => {})
+  }, [])
+
   const inp = 'w-full rounded-xl border border-[var(--border)] bg-[var(--bg-alt)] px-4 py-3 text-sm text-[var(--text)] placeholder-[var(--text-subtle)] outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
+  const selectCls = inp + ' cursor-pointer appearance-none bg-no-repeat bg-right pr-10 bg-[length:20px] dark:bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+")] bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=")]'
 
   function handleNext() {
     if (!name.trim())  return setError(isRu ? 'Введите имя' : 'Атыңызды жазыңыз')
     if (!phone.trim()) return setError(isRu ? 'Введите телефон' : 'Телефон жазыңыз')
+    if (!role)         return setError(isRu ? 'Укажите кто вы — ученик или родитель' : 'Ким экениңизди тандаңыз')
     setError('')
-    onDone({ name, phone, email, branch })
+    onDone({ name, phone, email, branch, age, role })
   }
 
   return (
@@ -237,6 +265,32 @@ function PaymentStep({ locale, courseName, onDone }: {
         </div>
       </div>
 
+      {/* Роль — ученик или родитель */}
+      <div>
+        <label className="mb-2 block text-sm font-medium text-[var(--text-muted)]">
+          {isRu ? 'Кто записывается?' : 'Ким жазылып жатат?'} <span className="text-orange-500">*</span>
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { value: 'student', labelRu: '🎓 Я ученик',   labelKg: '🎓 Мен окуучумун' },
+            { value: 'parent',  labelRu: '👨‍👧 Я родитель', labelKg: '👨‍👧 Мен ата-энемин' },
+          ].map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setRole(opt.value)}
+              className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
+                role === opt.value
+                  ? 'border-orange-500 bg-orange-500/10 text-orange-500 shadow-sm'
+                  : 'border-[var(--border)] bg-[var(--bg-alt)] text-[var(--text-muted)] hover:border-orange-500/40'
+              }`}
+            >
+              {isRu ? opt.labelRu : opt.labelKg}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Contact fields */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -250,25 +304,36 @@ function PaymentStep({ locale, courseName, onDone }: {
           <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">
             {isRu ? 'Телефон' : 'Телефон'} <span className="text-orange-500">*</span>
           </label>
-          <input value={phone} onChange={e => setPhone(e.target.value)} className={inp}
+          <input value={phone} onChange={handlePhoneChange} className={inp}
             placeholder="+996 700 000 000" type="tel" />
         </div>
       </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">Email</label>
-        <input value={email} onChange={e => setEmail(e.target.value)} className={inp}
-          placeholder="example@mail.com" type="email" />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">Email</label>
+          <input value={email} onChange={e => setEmail(e.target.value)} className={inp}
+            placeholder="example@mail.com" type="email" />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">
+            {isRu ? 'Возраст ученика' : 'Окуучунун жашы'}
+          </label>
+          <input value={age} onChange={e => setAge(e.target.value.replace(/\D/g, ''))} className={inp}
+            placeholder={isRu ? 'Например: 12' : 'Мисалы: 12'} type="text" inputMode="numeric" maxLength={3} />
+        </div>
       </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">
           {isRu ? 'Филиал' : 'Филиал'}
         </label>
-        <select value={branch} onChange={e => setBranch(e.target.value)} className={inp + ' cursor-pointer'}>
-          <option value="">{isRu ? 'Выберите филиал' : 'Филиал тандаңыз'}</option>
-          {['Филиал на Чуй', 'Филиал на Манас', 'Филиал на Ибраимова', 'Филиал Асанбай'].map(b => (
-            <option key={b} value={b}>{b}</option>
-          ))}
-        </select>
+        <CustomSelect
+          value={branch}
+          onChange={v => setBranch(v)}
+          placeholder={isRu ? 'Выберите филиал' : 'Филиал тандаңыз'}
+          options={branches.map(b => ({ value: b, label: b }))}
+        />
       </div>
 
       {/* QR payment block */}
@@ -387,6 +452,8 @@ function ReceiptStep({ locale, userData, onDone }: {
           comment:        userData.comment || undefined,
           paymentAmount:  userData.paymentAmount,
           paymentReceipt: preview || undefined,
+          age:            userData.age || undefined,
+          role:           userData.role || undefined,
           source:         'register_page',
         }),
       })
@@ -417,6 +484,8 @@ function ReceiptStep({ locale, userData, onDone }: {
           courseName: userData.courseName,
           branch:     userData.branch || undefined,
           comment:    userData.comment || undefined,
+          age:        userData.age || undefined,
+          role:       userData.role || undefined,
           source:     'register_page',
         }),
       })
@@ -530,9 +599,9 @@ export default function RegisterFlow({ locale }: { locale: string }) {
   const isRu = locale !== 'kg'
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [courseData, setCourseData] = useState({ courseName: '', comment: '' })
-  const [contactData, setContactData] = useState({ name: '', phone: '', email: '', branch: '' })
+  const [contactData, setContactData] = useState({ name: '', phone: '', email: '', branch: '', age: '', role: '' })
 
-  const course = COURSES.find(c => c.name === courseData.courseName)
+  const course = COURSES_FALLBACK.find(c => c.name === courseData.courseName)
 
   const STEPS = [
     { n: 1, label: isRu ? 'Курс'    : 'Курс'   },

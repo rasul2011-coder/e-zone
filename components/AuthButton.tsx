@@ -105,7 +105,7 @@ export default function AuthButton({ locale, isDark }: Props) {
                 </svg>
                 {isRu ? 'Личный кабинет' : 'Жеке кабинет'}
               </Link>
-              <Link href={`/${locale}/register`} onClick={() => setOpen(false)}
+              <Link href={`/${locale}/payment`} onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-4 py-2.5 text-sm transition ${isDark ? 'text-white/70 hover:bg-white/5 hover:text-white' : 'text-gray-700 hover:bg-gray-50'}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>

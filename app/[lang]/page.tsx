@@ -5,6 +5,11 @@ import { hasLocale } from '@/app/i18n/config'
 import { notFound } from 'next/navigation'
 import type { Locale } from '@/app/i18n/config'
 import TiltCard from '@/components/TiltCard'
+import ReviewsMarquee from '@/components/ReviewsMarquee'
+import InstallPWAButton from '@/components/InstallPWAButton'
+import StatsBand from '@/components/StatsBand'
+import { db, schema } from '@/lib/db'
+import { eq, asc, count } from 'drizzle-orm'
 
 export default async function HomePage({
   params,
@@ -22,48 +27,131 @@ export default async function HomePage({
     'IELTS Prep':       `/${locale}/courses/ielts-prep`,
   }
 
+  // ─── Load data from DB ──────────────────────────────────────────────────
+  const [dbCourses, dbReviews, dbStats, branchCount, studentCount] = await Promise.all([
+    // Featured / active courses
+    db.select({
+      id: schema.courses.id,
+      name: schema.courses.name,
+      slug: schema.courses.slug,
+      shortDescription: schema.courses.shortDescription,
+      price: schema.courses.price,
+      duration: schema.courses.duration,
+      ageFrom: schema.courses.ageFrom,
+      ageTo: schema.courses.ageTo,
+    })
+      .from(schema.courses)
+      .where(eq(schema.courses.isActive, true))
+      .orderBy(asc(schema.courses.sortOrder))
+      .limit(3)
+      .catch(() => []),
+
+    // Published reviews
+    db.select({
+      id: schema.reviews.id,
+      name: schema.reviews.name,
+      text: schema.reviews.text,
+      rating: schema.reviews.rating,
+    })
+      .from(schema.reviews)
+      .where(eq(schema.reviews.isPublished, true))
+      .orderBy(asc(schema.reviews.sortOrder))
+      .catch(() => []),
+
+    // Statistics
+    db.select()
+      .from(schema.statistics)
+      .where(eq(schema.statistics.isActive, true))
+      .orderBy(asc(schema.statistics.sortOrder))
+      .catch(() => []),
+
+    // Count active branches
+    db.select({ c: count() })
+      .from(schema.branches)
+      .where(eq(schema.branches.isActive, true))
+      .catch(() => [{ c: 0 }]),
+
+    // Count students (applications)
+    db.select({ c: count() })
+      .from(schema.applications)
+      .catch(() => [{ c: 0 }]),
+  ])
+
+  // Build stats array — use DB data if available, fall back to i18n hardcode
+  const STAT_GRADIENTS = [
+    'linear-gradient(135deg,#f97316,#ea580c)',
+    'linear-gradient(135deg,#3b82f6,#2563eb)',
+    'linear-gradient(135deg,#8b5cf6,#7c3aed)',
+    'linear-gradient(135deg,#10b981,#059669)',
+  ]
+  const statsData = dbStats.length >= 4
+    ? dbStats.slice(0, 4).map((s, i) => ({
+        value: s.title,
+        label: s.description,
+        gradient: STAT_GRADIENTS[i],
+      }))
+    : [
+        { value: t.stats.students, label: t.stats.students_label, gradient: STAT_GRADIENTS[0] },
+        { value: t.stats.years,    label: t.stats.years_label,    gradient: STAT_GRADIENTS[1] },
+        { value: t.stats.branches, label: t.stats.branches_label, gradient: STAT_GRADIENTS[2] },
+        { value: t.stats.success,  label: t.stats.success_label,  gradient: STAT_GRADIENTS[3] },
+      ]
+
+  // Build reviews array — use DB data if available, else fall back to i18n
+  const reviewsData = dbReviews.length > 0
+    ? dbReviews.map(r => ({
+        name: r.name,
+        course: '',
+        text: r.text,
+        rating: r.rating,
+      }))
+    : (t.reviews.items as Array<{ name: string; course: string; text: string; rating: number }>)
+
+  // Build courses array — use DB data if available, else fall back to i18n
+  type DbCourse = { id: number; name: string; slug: string; shortDescription: string; price: string | null; duration: string | null; ageFrom: number | null; ageTo: number | null }
+  const coursesData: DbCourse[] | null = dbCourses.length > 0 ? (dbCourses as DbCourse[]) : null
+
   return (
     <>
       {/* ─── HERO ──────────────────────────────────────────────────────────── */}
       <section
         id="home"
-        className="relative min-h-[92vh] overflow-hidden flex items-center"
-        style={{ background: 'linear-gradient(180deg, var(--bg-section-deep) 0%, var(--bg-section-deep) 85%, var(--bg) 100%)' }}
+        className="relative min-h-[92vh] overflow-hidden flex items-center bg-[var(--bg)]"
       >
-        {/* grid pattern */}
+        {/* Subtle dot pattern */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-[0.04]"
           style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+            backgroundImage: 'radial-gradient(circle at 1px 1px, #f97316 1px, transparent 0)',
             backgroundSize: '36px 36px',
           }}
         />
-        {/* gradient orbs */}
-        <div aria-hidden="true" className="pointer-events-none absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-orange-500/10 blur-3xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-3xl" />
+        {/* Warm gradient orbs */}
+        <div aria-hidden="true" className="pointer-events-none absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-orange-400/15 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-amber-400/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-4 py-24 md:px-8 lg:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-center">
 
             {/* Left copy */}
             <div className="max-w-2xl">
               {/* Badge */}
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-medium text-orange-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-sm font-medium text-orange-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                 {t.hero.badge}
               </div>
 
-              <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="text-3xl font-extrabold leading-[1.15] tracking-tight text-[var(--text)] sm:text-4xl lg:text-5xl max-w-2xl">
                 {t.hero.title}
               </h1>
-              <p className="mt-6 text-lg leading-relaxed text-white/60 sm:text-xl max-w-xl">
+              <p className="mt-6 text-lg leading-relaxed text-[var(--text-muted)] sm:text-xl max-w-xl">
                 {t.hero.subtitle}
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">
                 <Link
-                  href={`/${locale}/register`}
+                  href={`/${locale}/apply`}
                   className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95"
                 >
                   {t.hero.cta_primary}
@@ -71,24 +159,10 @@ export default async function HomePage({
                 </Link>
                 <Link
                   href={`/${locale}/courses`}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white backdrop-blur transition hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-alt)] px-7 py-3.5 text-base font-semibold text-[var(--text)] transition hover:border-orange-500/40 hover:bg-orange-500/5"
                 >
                   {t.hero.cta_secondary}
                 </Link>
-              </div>
-
-              {/* Mini stats */}
-              <div className="mt-12 flex flex-wrap gap-8">
-                {[
-                  { value: t.stats.students, label: t.stats.students_label },
-                  { value: t.stats.years,    label: t.stats.years_label },
-                  { value: t.stats.branches, label: t.stats.branches_label },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <p className="text-3xl font-extrabold text-white">{s.value}</p>
-                    <p className="mt-0.5 text-sm text-white/50">{s.label}</p>
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -96,26 +170,22 @@ export default async function HomePage({
             <div className="relative hidden lg:flex justify-center">
               <div className="relative w-full max-w-sm">
                 {/* Main photo card */}
-                <div className="group relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl cursor-pointer" style={{ height: '360px' }}>
+                <div className="group relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl cursor-pointer">
                   <Image
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=85&fit=crop"
-                    alt="Students learning English at English Zone"
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    src="/image.png"
+                    alt="English Zone"
+                    width={800}
+                    height={600}
+                    className="w-full h-auto object-contain transition-transform duration-700 group-hover:scale-105"
                     sizes="400px"
                     priority
                   />
                   {/* Base gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-section-deep)]/80 via-transparent to-transparent" />
-                  {/* Hover overlay — subtle orange tint */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                  {/* Hover overlay */}
                   <div className="absolute inset-0 bg-orange-500/0 group-hover:bg-orange-500/10 transition-colors duration-500" />
                   {/* Overlay text */}
                   <div className="absolute bottom-0 left-0 p-6 transition-transform duration-300 group-hover:-translate-y-1">
-                    <div className="mb-3 flex gap-2">
-                      {['🇺🇸','🇬🇧','🇦🇺'].map((f) => (
-                        <span key={f} className="text-xl">{f}</span>
-                      ))}
-                    </div>
                     <p className="text-2xl font-extrabold text-white">Hello!</p>
                     <p className="text-base font-semibold text-orange-400">Speak freely.</p>
                   </div>
@@ -128,7 +198,7 @@ export default async function HomePage({
                 </div>
 
                 {/* Photo grid below */}
-                <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="mt-6 grid grid-cols-2 gap-3">
                   <div className="relative overflow-hidden rounded-2xl border border-white/10" style={{ height: '120px' }}>
                     <Image
                       src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80&fit=crop"
@@ -153,16 +223,7 @@ export default async function HomePage({
                   </div>
                 </div>
 
-                {/* Floating rating badge */}
-                <div className="absolute -bottom-4 -right-4 flex items-center gap-2 rounded-2xl border border-white/10 section-hero px-4 py-3 shadow-2xl">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/20">
-                    <span className="text-xl">⭐</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">4.9 / 5.0</p>
-                    <p className="text-xs text-white/50">{t.stats.students} {t.stats.students_label}</p>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
@@ -224,28 +285,10 @@ export default async function HomePage({
       </section>
 
       {/* ─── STATS BAND ────────────────────────────────────────────────────── */}
-      <section className="py-20 relative overflow-hidden" style={{ background: 'var(--bg-section)' }}>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
-        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
-          <p className="text-center text-sm font-semibold uppercase tracking-widest text-orange-400 mb-10">
-            {t.stats.title}
-          </p>
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            {[
-              { value: t.stats.students, label: t.stats.students_label },
-              { value: t.stats.years,    label: t.stats.years_label },
-              { value: t.stats.branches, label: t.stats.branches_label },
-              { value: t.stats.success,  label: t.stats.success_label },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-5xl font-extrabold text-white tracking-tight">{s.value}</p>
-                <p className="mt-2 text-sm font-medium text-white/50 uppercase tracking-wider">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <StatsBand
+        title={t.stats.title}
+        stats={statsData}
+      />
 
       {/* ─── PROGRAMS ──────────────────────────────────────────────────────── */}
       <section id="courses" className="py-20 md:py-28 bg-[var(--bg-alt)]">
@@ -259,63 +302,85 @@ export default async function HomePage({
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
-            {(t.programs.items as Array<{
-              name: string; description: string; age: string; duration: string; tag: string; cta: string
-            }>).map((prog, i) => {
+            {(coursesData ?? (t.programs.items as Array<{
+              name: string; description: string; age: string; duration: string; tag: string; cta: string; slug?: string
+            }>)).map((prog: any, i) => {
               const accents = ['orange', 'blue', 'violet']
               const accent = accents[i] ?? 'orange'
+              // Support both DB course shape and i18n shape
+              const name = prog.name
+              const desc = prog.shortDescription ?? prog.description
+              const slug = prog.slug ?? null
+              const ageFrom = prog.ageFrom ?? null
+              const ageTo = prog.ageTo ?? null
+              const price = prog.price ?? null
+              const duration = prog.duration
+              const tag = prog.tag ?? (accents[i] === 'blue' ? (locale === 'ru' ? 'Для детей' : 'Балдар үчүн') : accents[i] === 'violet' ? 'IELTS' : (locale === 'ru' ? 'Популярный' : 'Популярдуу'))
+              const cta = prog.cta ?? (locale === 'ru' ? 'Подробнее' : 'Толугураак')
+              const href = slug ? `/${locale}/courses/${slug}` : (COURSE_HREFS[name] ?? `/${locale}/courses`)
+
               const gradients: Record<string, string> = {
-                orange: 'from-orange-500/20 to-orange-500/5',
-                blue:   'from-blue-500/20 to-blue-500/5',
-                violet: 'from-violet-500/20 to-violet-500/5',
+                orange: 'from-orange-500/15 to-orange-400/5',
+                blue:   'from-blue-500/15 to-blue-400/5',
+                violet: 'from-violet-500/15 to-violet-400/5',
               }
               const tagColors: Record<string, string> = {
-                orange: 'bg-orange-500/15 text-orange-500',
-                blue:   'bg-blue-500/15 text-blue-500',
-                violet: 'bg-violet-500/15 text-violet-500',
+                orange: 'bg-orange-500/15 text-orange-600',
+                blue:   'bg-blue-500/15 text-blue-600',
+                violet: 'bg-violet-500/15 text-violet-600',
               }
               const btnColors: Record<string, string> = {
                 orange: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30',
                 blue:   'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30',
                 violet: 'bg-violet-600 hover:bg-violet-700 shadow-violet-500/30',
               }
+
               return (
                 <div
-                  key={prog.name}
-                  className={`flex flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition hover:-translate-y-1 hover:shadow-xl duration-300 ${i === 1 ? 'ring-2 ring-blue-500/30' : ''}`}
+                  key={name}
+                  className={`flex flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-card)] transition hover:-translate-y-1 hover:shadow-xl hover:border-orange-500/20 duration-300 ${i === 1 ? 'ring-2 ring-blue-500/20' : ''}`}
                 >
-                  {/* Card header gradient */}
                   <div className={`bg-gradient-to-br ${gradients[accent]} p-6 pb-8`}>
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-2xl font-extrabold text-[var(--text)]">{prog.name}</h3>
-                      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${tagColors[accent]}`}>
-                        {prog.tag}
-                      </span>
+                      <h3 className="text-2xl font-extrabold text-[var(--text)]">{name}</h3>
+                      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${tagColors[accent]}`}>{tag}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-1 flex-col p-6 pt-0 -mt-4">
-                    {/* Meta chips */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="flex items-center gap-1 rounded-full bg-[var(--bg-alt)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                        {t.programs.age_label}: {prog.age}
-                      </span>
-                      <span className="flex items-center gap-1 rounded-full bg-[var(--bg-alt)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {prog.duration}
-                      </span>
+                      {(ageFrom || ageTo) && (
+                        <span className="flex items-center gap-1 rounded-full bg-[var(--bg-alt)] border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                          {t.programs.age_label}: {ageFrom}{ageTo ? `–${ageTo}` : '+'}
+                        </span>
+                      )}
+                      {!ageFrom && 'age' in prog && (
+                        <span className="flex items-center gap-1 rounded-full bg-[var(--bg-alt)] border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                          {t.programs.age_label}: {(prog as { age: string }).age}
+                        </span>
+                      )}
+                      {duration && (
+                        <span className="flex items-center gap-1 rounded-full bg-[var(--bg-alt)] border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          {duration}
+                        </span>
+                      )}
                     </div>
 
-                    <p className="flex-1 text-sm leading-relaxed text-[var(--text-muted)] mb-6">
-                      {prog.description}
-                    </p>
+                    <p className="flex-1 text-sm leading-relaxed text-[var(--text-muted)] mb-4">{desc}</p>
 
-                    <Link
-                      href={COURSE_HREFS[prog.name] ?? `/${locale}/courses`}
+                    {price && (
+                      <p className="mb-4 text-base font-bold text-orange-600">
+                        {t.programs.from} {Number(price).toLocaleString()} {t.programs.per_month}
+                      </p>
+                    )}
+
+                    <Link href={href}
                       className={`mt-auto flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition active:scale-95 ${btnColors[accent]}`}
                     >
-                      {prog.cta}
+                      {cta}
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </Link>
                   </div>
@@ -347,11 +412,7 @@ export default async function HomePage({
                 <div key={i} className="relative flex flex-col items-center text-center group cursor-default">
                   {/* Step circle */}
                   <div
-                    className="relative z-10 mb-6 flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-extrabold text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-orange-500 group-hover:shadow-orange-500/40"
-                    style={{
-                      background: 'linear-gradient(135deg, var(--bg-section) 0%, var(--bg-section-mid) 100%)',
-                      boxShadow: '0 4px 16px rgba(26,42,74,0.25), 0 1px 4px rgba(0,0,0,0.12)',
-                    }}
+                    className="relative z-10 mb-6 flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-extrabold text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-orange-500/40 bg-orange-500"
                   >
                     {i + 1}
                   </div>
@@ -374,79 +435,42 @@ export default async function HomePage({
             <h2 className="text-3xl font-extrabold text-[var(--text)] sm:text-4xl">{t.reviews.title}</h2>
             <p className="mt-4 text-lg text-[var(--text-muted)] max-w-2xl mx-auto">{t.reviews.subtitle}</p>
           </div>
-
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {(t.reviews.items as Array<{
-              name: string; course: string; text: string; rating: number
-            }>).map((rev, i) => (
-              <TiltCard key={i} intensity={8}>
-              <div
-                className="flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-orange-500/12 hover:border-orange-500/40 h-full"
-                style={{ boxShadow: '0 1px 3px rgba(15,29,53,0.06), 0 2px 8px rgba(15,29,53,0.04)' }}
-              >
-                {/* Top row: stars + course tag */}
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: rev.rating }).map((_, s) => (
-                      <svg key={s} xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="#f97316" stroke="none">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="shrink-0 rounded-full bg-orange-500/10 px-2 py-0.5 text-[11px] font-semibold text-orange-500">
-                    {rev.course}
-                  </span>
-                </div>
-
-                {/* Quote */}
-                <p className="flex-1 text-sm leading-relaxed text-[var(--text-muted)] mb-5">
-                  &ldquo;{rev.text}&rdquo;
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-3 border-t border-[var(--border)] pt-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-sm font-bold text-white">
-                    {rev.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--text)]">{rev.name}</p>
-                    <p className="text-xs text-[var(--text-subtle)]">{rev.course}</p>
-                  </div>
-                </div>
-              </div>
-              </TiltCard>
-            ))}
-          </div>
         </div>
+
+        {/* Marquee with one row */}
+        <ReviewsMarquee 
+          rows={1}
+          reviews={reviewsData} 
+        />
       </section>
 
       {/* ─── CTA BANNER ────────────────────────────────────────────────────── */}
-      <section className="relative py-24 md:py-32 overflow-hidden" style={{ background: 'var(--bg-section)' }}>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.04]"
+      <section className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.08]"
           style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
-        <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-orange-500/20 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl px-4 text-center md:px-8">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-orange-400">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-white/80">
             English Zone
           </p>
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl leading-tight">
             {t.cta_banner.title}
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-white/60">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-white/80">
             {t.cta_banner.subtitle}
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
-              href={`/${locale}/register`}
-              className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:bg-orange-600 hover:shadow-orange-500/40 active:scale-95"
+              href={`/${locale}/apply`}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-orange-600 shadow-lg transition hover:bg-orange-50 active:scale-95"
             >
               {t.cta_banner.cta}
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </Link>
             <Link
               href={`/${locale}/courses`}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur transition hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur transition hover:bg-white/20"
             >
               {t.cta_banner.secondary}
             </Link>
@@ -551,7 +575,7 @@ export default async function HomePage({
               </p>
               <p className="text-sm text-[var(--text-muted)] mb-4">{t.footer.schedule_value}</p>
               <Link
-                href={`/${locale}/register`}
+                href={`/${locale}/apply`}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 active:scale-95"
               >
                 {locale === 'ru' ? 'Записаться на урок' : 'Сабакка жазылуу'}
@@ -562,12 +586,24 @@ export default async function HomePage({
 
           {/* Bottom bar */}
           <div className="mt-6 flex flex-col items-center justify-between gap-3 border-t border-[var(--border)] pt-5 sm:flex-row">
-            <p className="text-xs text-[var(--text-subtle)]">
-              {t.footer.copyright.replace('{year}', String(new Date().getFullYear()))}
-            </p>
-            <Link href="#" className="text-xs text-[var(--text-subtle)] hover:text-orange-500 transition">
-              {locale === 'ru' ? 'Политика конфиденциальности' : 'Купуялык саясаты'}
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {/* PWA Install Button */}
+              <InstallPWAButton locale={locale} />
+              
+              <p className="text-xs text-[var(--text-subtle)]">
+                {t.footer.copyright.replace('{year}', String(new Date().getFullYear()))}
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link href={`/${locale}/terms`} className="text-xs text-[var(--text-subtle)] hover:text-orange-500 transition">
+                {locale === 'ru' ? 'Условия использования' : 'Колдонуу шарттары'}
+              </Link>
+              <span className="text-[var(--text-subtle)]">·</span>
+              <Link href={`/${locale}/privacy`} className="text-xs text-[var(--text-subtle)] hover:text-orange-500 transition">
+                {locale === 'ru' ? 'Политика конфиденциальности' : 'Купуялуулук саясаты'}
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

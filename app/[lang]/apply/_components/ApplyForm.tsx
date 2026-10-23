@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import { usePhoneFormat } from '@/hooks/usePhoneFormat'
+import CustomSelect from '@/components/CustomSelect'
 
 interface Props {
   locale: string
@@ -25,8 +27,8 @@ interface Props {
   }
 }
 
-const COURSES = ['General English', 'Kids Club', 'IELTS Prep']
-const BRANCHES = [
+const FALLBACK_COURSES = ['General English', 'Kids Club', 'IELTS Prep']
+const FALLBACK_BRANCHES = [
   'Филиал на Чуй', 'Филиал на Манас',
   'Филиал на Ибраимова', 'Филиал Асанбай',
 ]
@@ -37,11 +39,26 @@ export default function ApplyForm({ locale, t }: Props) {
   const [error, setError]       = useState('')
   const [privacy, setPrivacy]   = useState(false)
   const [name, setName]         = useState('')
-  const [phone, setPhone]       = useState('')
+  const [phone, handlePhoneChange] = usePhoneFormat()
   const [course, setCourse]     = useState('')
   const [branch, setBranch]     = useState('')
   const [time, setTime]         = useState('')
   const [comment, setComment]   = useState('')
+
+  const [courses, setCourses] = useState<string[]>(FALLBACK_COURSES)
+  const [branches, setBranches] = useState<string[]>(FALLBACK_BRANCHES)
+
+  // Load courses and branches from API
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setCourses(d.data.map((c: { name: string }) => c.name)) })
+      .catch(() => {})
+    fetch('/api/branches')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setBranches(d.data.map((b: { name: string }) => b.name)) })
+      .catch(() => {})
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -73,7 +90,7 @@ export default function ApplyForm({ locale, t }: Props) {
   }
 
   const inputCls = 'w-full rounded-xl border border-[var(--border)] bg-[var(--bg-alt)] px-4 py-3 text-sm text-[var(--text)] placeholder-[var(--text-subtle)] outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-  const selectCls = inputCls + ' cursor-pointer'
+  const selectCls = inputCls + ' cursor-pointer appearance-none bg-no-repeat bg-right pr-10 bg-[length:20px] dark:bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+")] bg-[url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=")]'
   const labelCls = 'mb-1.5 block text-sm font-medium text-[var(--text-muted)]'
 
   return (
@@ -86,24 +103,28 @@ export default function ApplyForm({ locale, t }: Props) {
         </div>
         <div>
           <label className={labelCls}>{t.form.phone} <span className="text-orange-500">*</span></label>
-          <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)}
+          <input type="tel" required value={phone} onChange={handlePhoneChange}
             placeholder={t.form.phone_placeholder} className={inputCls} />
         </div>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className={labelCls}>{t.form.course}</label>
-          <select value={course} onChange={e => setCourse(e.target.value)} className={selectCls}>
-            <option value="">{t.form.course_placeholder}</option>
-            {COURSES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <CustomSelect
+            value={course}
+            onChange={v => setCourse(v)}
+            placeholder={t.form.course_placeholder}
+            options={courses.map(c => ({ value: c, label: c }))}
+          />
         </div>
         <div>
           <label className={labelCls}>{t.form.branch}</label>
-          <select value={branch} onChange={e => setBranch(e.target.value)} className={selectCls}>
-            <option value="">{t.form.branch_placeholder}</option>
-            {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
+          <CustomSelect
+            value={branch}
+            onChange={v => setBranch(v)}
+            placeholder={t.form.branch_placeholder}
+            options={branches.map(b => ({ value: b, label: b }))}
+          />
         </div>
       </div>
       <div>

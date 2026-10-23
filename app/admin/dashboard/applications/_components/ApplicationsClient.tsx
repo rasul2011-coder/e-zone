@@ -9,6 +9,7 @@ interface Application {
   statusId: number; courseId?: number; branchId?: number
   courseName?: string; isPaid?: boolean
   paymentAmount?: number; paymentReceipt?: string
+  age?: number; role?: string
   createdAt: string
 }
 
@@ -150,6 +151,7 @@ export default function ApplicationsClient() {
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Имя</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Телефон</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40 hidden md:table-cell">Курс</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40 hidden lg:table-cell">Роль / Возраст</th>
               <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-white/40 hidden sm:table-cell">Оплата</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Статус</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40 hidden lg:table-cell">Дата</th>
@@ -170,6 +172,23 @@ export default function ApplicationsClient() {
                 <td className="px-4 py-3 text-white/70">{app.phone}</td>
                 <td className="px-4 py-3 text-white/50 hidden md:table-cell">
                   {app.courseName || '—'}
+                </td>
+                <td className="px-4 py-3 hidden lg:table-cell">
+                  <div className="flex flex-col gap-1">
+                    {app.role && (
+                      <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        app.role === 'parent'
+                          ? 'bg-blue-500/15 text-blue-400'
+                          : 'bg-violet-500/15 text-violet-400'
+                      }`}>
+                        {app.role === 'parent' ? '👨‍👧 Родитель' : '🎓 Ученик'}
+                      </span>
+                    )}
+                    {app.age && (
+                      <span className="text-xs text-white/40">{app.age} лет</span>
+                    )}
+                    {!app.role && !app.age && <span className="text-xs text-white/20">—</span>}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">
                   {app.isPaid ? (
@@ -251,9 +270,11 @@ export default function ApplicationsClient() {
             {/* Info rows */}
             <div className="space-y-2.5 mb-5">
               {[
-                { label: 'Телефон',   value: selected.phone },
-                { label: 'Email',     value: selected.email ?? '—' },
-                { label: 'Курс',      value: selected.courseName ?? '—' },
+                { label: 'Телефон',       value: selected.phone },
+                { label: 'Email',         value: selected.email ?? '—' },
+                { label: 'Роль',          value: selected.role === 'parent' ? '👨‍👧 Родитель' : selected.role === 'student' ? '🎓 Ученик' : '—' },
+                { label: 'Возраст',       value: selected.age ? `${selected.age} лет` : '—' },
+                { label: 'Курс',          value: selected.courseName ?? '—' },
                 { label: 'Удобное время', value: selected.preferredTime ?? '—' },
                 { label: 'Комментарий',   value: selected.comment ?? '—' },
                 { label: 'Источник',      value: selected.source ?? '—' },

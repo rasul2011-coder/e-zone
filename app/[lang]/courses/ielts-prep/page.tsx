@@ -56,7 +56,7 @@ export default async function IeltsPrepPage({ params }: { params: Promise<{ lang
               <p className="mt-4 text-white/60 text-lg">{t.subtitle}</p>
               <p className="mt-4 text-white/50 leading-relaxed">{t.description}</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href={`/${locale}/register`}
+                <Link href={`/${locale}/payment`}
                   className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white hover:bg-violet-700 transition shadow-lg shadow-violet-500/30">
                   {t.cta}
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -121,7 +121,7 @@ export default async function IeltsPrepPage({ params }: { params: Promise<{ lang
             ))}
           </div>
           <div className="mt-12 text-center">
-            <Link href={`/${locale}/register`}
+            <Link href={`/${locale}/apply`}
               className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-semibold text-white hover:bg-violet-700 transition shadow-lg shadow-violet-500/30">
               {t.cta}
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

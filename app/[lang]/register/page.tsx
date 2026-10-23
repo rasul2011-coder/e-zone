@@ -31,15 +31,15 @@ export default async function RegisterPage({ params }: { params: Promise<{ lang:
       </div>
 
       {/* Hero */}
-      <section className="section-hero py-14">
+      <section className="py-14 bg-gradient-to-b from-orange-50 to-[var(--bg)]">
         <div className="mx-auto max-w-7xl px-4 md:px-8 text-center relative z-10">
-          <span className="mb-3 inline-block rounded-full bg-orange-500/15 px-4 py-1.5 text-sm font-semibold text-orange-400">
+          <span className="mb-3 inline-block rounded-full bg-orange-500/10 px-4 py-1.5 text-sm font-semibold text-orange-600">
             {isRu ? 'Регистрация' : 'Каттоо'}
           </span>
-          <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
+          <h1 className="text-3xl font-extrabold text-[var(--text)] sm:text-4xl">
             {isRu ? 'Записаться на курс' : 'Курска жазылуу'}
           </h1>
-          <p className="mt-3 text-white/60 max-w-lg mx-auto text-sm">
+          <p className="mt-3 text-[var(--text-muted)] max-w-lg mx-auto text-sm">
             {isRu
               ? 'AI поможет выбрать курс, затем оплатите через QR и загрузите чек'
               : 'AI курс тандоого жардам берет, андан кийин QR аркылуу төлөп, чек жүктөңүз'}

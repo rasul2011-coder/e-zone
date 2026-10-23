@@ -5,6 +5,7 @@ import { hasLocale } from '@/app/i18n/config'
 import type { Locale } from '@/app/i18n/config'
 import type { Metadata } from 'next'
 import ApplyForm from './_components/ApplyForm'
+import { GraduationCap, Zap, ClipboardList } from 'lucide-react'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params
@@ -62,12 +63,12 @@ export default async function ApplyPage({ params }: { params: Promise<{ lang: st
             {/* Side info */}
             <div className="space-y-5">
               {[
-                { icon: '🎓', title: locale === 'ru' ? 'Бесплатный пробный урок' : 'Акысыз сыноо сабак', text: locale === 'ru' ? 'Первое занятие без обязательств — познакомьтесь с методикой и преподавателем' : 'Биринчи сабак милдеттенмесиз — методика жана мугалим менен таанышыңыз' },
-                { icon: '⚡', title: locale === 'ru' ? 'Ответим за 30 минут' : '30 мүнөттө жооп беребиз', text: locale === 'ru' ? 'Наш менеджер перезвонит и ответит на все вопросы' : 'Менеджерибиз кайра чалып, бардык суроолорго жооп берет' },
-                { icon: '📋', title: locale === 'ru' ? 'Бесплатное тестирование' : 'Акысыз тестирлөө', text: locale === 'ru' ? 'Определим ваш уровень и подберём подходящую группу' : 'Деңгээлиңизди аныктап, ылайыктуу топту тандайбыз' },
-              ].map((item) => (
-                <div key={item.icon} className="flex gap-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
-                  <span className="text-3xl shrink-0">{item.icon}</span>
+                { icon: <GraduationCap className="w-8 h-8" />, title: locale === 'ru' ? 'Бесплатный пробный урок' : 'Акысыз сыноо сабак', text: locale === 'ru' ? 'Первое занятие без обязательств — познакомьтесь с методикой и преподавателем' : 'Биринчи сабак милдеттенмесиз — методика жана мугалим менен таанышыңыз' },
+                { icon: <Zap className="w-8 h-8" />, title: locale === 'ru' ? 'Ответим за 30 минут' : '30 мүнөттө жооп беребиз', text: locale === 'ru' ? 'Наш менеджер перезвонит и ответит на все вопросы' : 'Менеджерибиз кайра чалып, бардык суроолорго жооп берет' },
+                { icon: <ClipboardList className="w-8 h-8" />, title: locale === 'ru' ? 'Бесплатное тестирование' : 'Акысыз тестирлөө', text: locale === 'ru' ? 'Определим ваш уровень и подберём подходящую группу' : 'Деңгээлиңизди аныктап, ылайыктуу топту тандайбыз' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex gap-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+                  <div className="text-orange-500 shrink-0">{item.icon}</div>
                   <div>
                     <p className="font-semibold text-[var(--text)] mb-1">{item.title}</p>
                     <p className="text-sm leading-relaxed text-[var(--text-muted)]">{item.text}</p>

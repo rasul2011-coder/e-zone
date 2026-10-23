@@ -11,6 +11,24 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 export const metadata: Metadata = {
   title: 'English Zone — Языковой центр',
   description: 'Языковой центр English Zone — эффективное обучение английскому для детей и взрослых в Бишкеке',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'English Zone',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+}
+
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    themeColor: '#f97316',
+  }
 }
 
 // Load brand colors from DB — applied as inline CSS vars so they override globals.css defaults
@@ -44,6 +62,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
     >
       <head>
+        {/* PWA Meta Tags */}
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="English Zone" />
+        
         {/* Inline script runs synchronously before React hydrates — prevents flash of wrong theme */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script

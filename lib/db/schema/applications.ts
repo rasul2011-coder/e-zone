@@ -40,6 +40,9 @@ export const applications = pgTable('applications', {
   paymentAmount:   integer('payment_amount'),                  // amount in KGS
   paymentReceipt:  varchar('payment_receipt', { length: 1000 }), // base64 or URL of uploaded receipt
   isPaid:          boolean('is_paid').notNull().default(false),
+  // Extra user info
+  age:             integer('age'),                             // age of student
+  role:            varchar('role', { length: 50 }),            // 'student' | 'parent'
   createdAt:       timestamp('created_at').notNull().defaultNow(),
   updatedAt:       timestamp('updated_at').notNull().defaultNow(),
 })
